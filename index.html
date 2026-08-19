@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#17324d">
   <title>包装灵感库</title>
-  <link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <header>
@@ -19,20 +19,39 @@
   <main id="app">
     <!-- 筛选栏 -->
     <section class="toolbar panel">
-      <div class="toolbar-row">
-        <input id="searchInput" type="search" placeholder="搜索标题、盒型、材料…" class="search-box">
-        <button id="newEntryBtn" class="primary compact-btn" hidden>+ 新建</button>
+      <div class="action-row">
+        <div class="btn-group">
+          <button id="newEntryBtn" class="primary compact-btn" hidden>+ 新建记录</button>
+          <p id="newEntryHint" class="btn-hint" hidden>添加一条新的包装灵感记录</p>
+        </div>
+      </div>
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="searchInput" type="search" placeholder="搜索标题、盒型、材料…" class="search-box">
+        </div>
       </div>
       <div class="filter-row">
         <select id="filterBoxType" class="filter-select"><option value="">盒型</option></select>
+        <input id="filterBoxTypeCustom" type="text" class="filter-select custom-filter-input" placeholder="输入盒型名称…" hidden>
         <select id="filterMaterial" class="filter-select"><option value="">材料</option></select>
         <select id="filterCategory" class="filter-select"><option value="">品类</option></select>
         <select id="filterStyle" class="filter-select"><option value="">风格</option></select>
-        <input id="filterDateFrom" type="date" class="filter-date" title="起始日期">
-        <input id="filterDateTo" type="date" class="filter-date" title="截止日期">
+        <div class="date-range">
+          <span class="date-label">日期</span>
+          <input id="filterDateFrom" type="date" class="filter-date" title="起始日期">
+          <span class="date-sep">至</span>
+          <input id="filterDateTo" type="date" class="filter-date" title="截止日期">
+        </div>
         <button id="clearFilters" class="ghost-btn">清除</button>
       </div>
-      <p id="resultCount" class="result-count"></p>
+      <div class="search-action-row">
+        <div class="btn-group">
+          <button id="searchBtn" class="search-btn">搜索</button>
+          <p class="btn-hint">按关键词或筛选条件查找已有记录</p>
+        </div>
+      </div>
+     <p id="resultCount" class="result-count"></p>
     </section>
 
     <!-- 画廊网格 -->
@@ -57,7 +76,25 @@
     <img id="lightboxImg" src="" alt="">
   </div>
 
+  <!-- Token 输入弹层 -->
+  <div id="tokenOverlay" class="overlay" hidden>
+    <div class="overlay-inner" style="max-width:420px">
+      <div class="form-header">
+        <h2>连接 GitHub</h2>
+      </div>
+      <div class="form-body" style="padding:24px">
+        <p style="font-size:13px;color:#50677a;line-height:1.6;margin:0 0 16px">输入你的 GitHub Personal Access Token，用于读写仓库数据。Token 只存在本浏览器，不会上传到任何地方。</p>
+        <input type="password" id="tokenInput" class="search-box" style="width:100%;margin-bottom:12px" placeholder="github_pat_...">
+        <p class="hint" style="margin:0 0 16px">没有 Token？<a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color:var(--blue)">点这里生成</a>，权限选 Contents: Read and write</p>
+        <div style="display:flex;gap:10px">
+          <button type="button" class="cancel" id="tokenCancel" style="flex:1;border:1px solid var(--line);border-radius:12px;padding:14px;font-weight:800;background:#eef1f3;color:#50677a;cursor:pointer">取消</button>
+          <button type="button" id="tokenSave" style="flex:1;border:0;border-radius:12px;padding:14px;font-weight:800;background:var(--orange);color:#fff;cursor:pointer">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer>包装灵感库 · 本地编辑 · 静态发布 · 数据自有</footer>
-  <script src="app.js?v=1"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

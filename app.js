@@ -1,17 +1,55 @@
 'use strict';
 
 // 盒型/品类/风格/材料 选项（可随数据增长自动扩展）
-const BOX_TYPES = ['彩盒','瓦楞箱','天地盖','抽屉盒','书型盒','异型盒','展示盒','托盘','其他'];
+const BOX_TYPES = ['飞机盒','异型盒','双插盒','扣底盒','吊孔盒','平粘盒/机包盒','自锁底盒','提手盒','披萨盒','翻盖盒','对盖盒','盘式盒','抽屉盒','未知'];
 const MATERIALS = ['瓦楞纸','纸板','卡纸','EPE珍珠棉','泡沫','塑料','木浆甘蔗渣','环保纸塑','其他'];
 const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','其他'];
 const STYLES = ['简约','高级感','丰富','可爱','科技感','复古','自然','极简'];
 
+// GitHub 仓库配置
+const GH = { owner: 'sery-921', repo: 'packaging-inspiration-library', branch: 'main' };
+
 let ENTRIES = [];
 let EDIT_MODE = false;
+let _entriesSha = null; // entries.json 的 git sha，更新时需要
+
+// 获取 token（localStorage）
+function getToken() { return localStorage.getItem('gh_token') || ''; }
+function setToken(t) { localStorage.setItem('gh_token', t); }
+function clearToken() { localStorage.removeItem('gh_token'); }
+
+// GitHub API 封装
+async function ghApi(path, method = 'GET', body = null) {
+  const token = getToken();
+  const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' };
+  const opts = { method, headers };
+  if (body) {
+    headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${path}?ref=${GH.branch}`, opts);
+  if (res.status === 404) return null;
+  if (res.status === 403) {
+    const limit = res.headers.get('X-RateLimit-Remaining');
+    if (limit === '0') throw new Error('GitHub API 请求次数已达上限，请稍后再试');
+    throw new Error('无权限或 token 无效');
+  }
+  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  return res.json();
+}
+
+// 从 base64 解码 JSON
+function decodeJson(b64) {
+  return JSON.parse(decodeURIComponent(escape(atob(b64.replace(/\n/g, '')))));
+}
+
+// 编码 JSON 为 base64
+function encodeJson(obj) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2))));
+}
 
 // ========== 初始化 ==========
 async function init() {
-  // 探测是否在本地服务器环境（有 /api）
   EDIT_MODE = await detectEditMode();
   updateModeBadge();
 
@@ -22,11 +60,7 @@ async function init() {
 }
 
 async function detectEditMode() {
-  try {
-    const res = await fetch('/api/entries', { method: 'GET' });
-    if (res.ok) return true;
-  } catch { /* 静态部署，无 API */ }
-  return false;
+  return !!getToken();
 }
 
 function updateModeBadge() {
@@ -36,46 +70,98 @@ function updateModeBadge() {
     badge.textContent = '编辑模式';
     badge.className = 'mode-badge edit';
     document.getElementById('newEntryBtn').hidden = false;
+    document.getElementById('newEntryHint').hidden = false;
   } else {
-    badge.textContent = '只读浏览';
+    badge.textContent = '只读浏览 · 点击连接 GitHub';
     badge.className = 'mode-badge readonly';
+    badge.style.cursor = 'pointer';
     document.getElementById('newEntryBtn').hidden = true;
+    document.getElementById('newEntryHint').hidden = true;
   }
 }
 
 async function loadEntries() {
-  if (EDIT_MODE) {
-    try {
-      const res = await fetch('/api/entries');
-      ENTRIES = await res.json();
-    } catch (e) {
-      ENTRIES = [];
-    }
-  } else {
-    // 静态模式：读取本地 JSON 文件
+  // 没有 token 时从静态文件加载
+  if (!EDIT_MODE) {
     try {
       const res = await fetch('data/entries.json');
       ENTRIES = await res.json();
-    } catch {
+    } catch { ENTRIES = []; }
+    return;
+  }
+  try {
+    const file = await ghApi('data/entries.json');
+    if (file) {
+      _entriesSha = file.sha;
+      ENTRIES = decodeJson(file.content);
+    } else {
       ENTRIES = [];
     }
+  } catch (e) {
+    console.error('loadEntries error:', e);
+    ENTRIES = [];
   }
+}
+
+// ========== Token 管理 ==========
+function showTokenDialog() {
+  document.getElementById('tokenInput').value = getToken();
+  showOverlay('tokenOverlay');
+  document.getElementById('tokenInput').focus();
+}
+
+async function saveTokenAndReload() {
+  const token = document.getElementById('tokenInput').value.trim();
+  if (!token) { alert('请输入 Token'); return; }
+  setToken(token);
+  closeOverlay('tokenOverlay');
+  EDIT_MODE = true;
+  updateModeBadge();
+  await loadEntries();
+  populateFilterOptions();
+  renderGallery();
 }
 
 // 填充筛选项
 function populateFilterOptions() {
-  fillSelect('filterBoxType', BOX_TYPES);
+  // 盒型筛选：预设列表 + 自定义选项 + 数据中已存在的自定义盒型
+  const customBoxTypes = ENTRIES
+    .map(e => e.boxType)
+    .filter(bt => bt && !BOX_TYPES.includes(bt));
+  const uniqueCustom = [...new Set(customBoxTypes)];
+  const allBoxTypes = uniqueCustom.length
+    ? [...BOX_TYPES, '__custom_sep__', ...uniqueCustom, '__custom__']
+    : [...BOX_TYPES, '__custom__'];
+  fillSelect('filterBoxType', allBoxTypes, {
+    separator: '__custom_sep__',
+    labels: { '__custom__': '自定义' },
+  });
   fillSelect('filterMaterial', MATERIALS);
   fillSelect('filterCategory', CATEGORIES);
   fillSelect('filterStyle', STYLES);
 }
 
-function fillSelect(id, options) {
+function fillSelect(id, options, opts = {}) {
   const sel = document.getElementById(id);
   const cur = sel.value;
   // 保留第一个 placeholder
   while (sel.options.length > 1) sel.remove(1);
- options.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; sel.appendChild(opt); });
+  options.forEach(o => {
+    if (o === opts.separator) {
+      const sep = document.createElement('option');
+      sep.disabled = true;
+      sep.textContent = '── 自定义 ──';
+      sel.appendChild(sep);
+    } else if (opts.labels && opts.labels[o]) {
+      const opt = document.createElement('option');
+      opt.value = o; opt.textContent = opts.labels[o];
+      sel.appendChild(opt);
+    } else {
+      const opt = document.createElement('option');
+      opt.value = o; opt.textContent = o;
+      sel.appendChild(opt);
+    }
+  });
   sel.value = cur;
 }
 
@@ -92,10 +178,14 @@ function getFiltered() {
   };
 
   return ENTRIES.filter(e => {
-    if (ft.boxType && e.boxType !== ft.boxType) return false;
+    if (ft.boxType === '__custom__') {
+      const cv = document.getElementById('filterBoxTypeCustom').value.trim().toLowerCase();
+      if (!cv) return true; // 未输入文字时不过滤
+      if (!e.boxType || !e.boxType.toLowerCase().includes(cv)) return false;
+    } else if (ft.boxType && ft.boxType !== '__custom_sep__' && e.boxType !== ft.boxType) return false;
     if (ft.material && (!e.material || e.material.type !== ft.material)) return false;
     if (ft.category && e.productCategory !== ft.category) return false;
-    if (ft.style && !(e.appearanceStyle || []).includes(ft.style)) return false;
+    if (ft.style && !(e.appearanceStyle || []).some(s => s === ft.style || s === '#' + ft.style || s.replace(/^#/,'') === ft.style)) return false;
     if (ft.dateFrom && e.date < ft.dateFrom) return false;
     if (ft.dateTo && e.date > ft.dateTo) return false;
     if (kw) {
@@ -131,9 +221,11 @@ function renderGallery() {
       e.material ? e.material.type : '',
       e.productCategory,
     ].filter(Boolean).slice(0, 3);
+    const photoCount = (e.photos && e.photos.length) ? e.photos.length : 0;
+    const photoBadge = photoCount > 1 ? `<span class="card-photo-count">${photoCount}张</span>` : '';
     const imgHtml = cover
-      ? `<img class="card-img" src="${cover}" alt="${esc(e.title)}" loading="lazy">`
-      : `<div class="card-img-placeholder">暂无图片</div>`;
+      ? `<div class="card-img-wrap"><img class="card-img" src="${cover}" alt="${esc(e.title)}" loading="lazy">${photoBadge}</div>`
+      : `<div class="card-img-wrap"><div class="card-img-placeholder">暂无图片</div>${photoBadge}</div>`;
     return `<div class="card" data-id="${esc(e.id)}">
       ${imgHtml}
       <div class="card-body">
@@ -245,8 +337,34 @@ function openDetail(id) {
 async function handleDelete(id) {
   if (!confirm('确认删除这条记录？关联的图片和刀模文件也会一起删除。')) return;
   try {
-    await fetch(`/api/entries/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    ENTRIES = ENTRIES.filter(e => e.id !== id);
+    // 从 GitHub 读取最新数据
+    const file = await ghApi('data/entries.json');
+    const entries = file ? decodeJson(file.content) : [];
+    _entriesSha = file ? file.sha : null;
+    const target = entries.find(e => e.id === id);
+    if (!target) throw new Error('记录不存在');
+    // 删除关联的图片和刀模文件
+    if (target.photos) {
+      for (const p of target.photos) {
+        if (p.file) {
+          try {
+            const imgFile = await ghApi(`images/${p.file}`);
+            if (imgFile) await ghApi(`images/${p.file}`, 'DELETE', { message: `删除图片: ${p.file}`, sha: imgFile.sha, branch: GH.branch });
+          } catch (e) { console.error('删除图片失败:', e); }
+        }
+      }
+    }
+    if (target.dieline && target.dieline.file) {
+      try {
+        const dFile = await ghApi(`dielines/${target.dieline.file}`);
+        if (dFile) await ghApi(`dielines/${target.dieline.file}`, 'DELETE', { message: `删除刀模文件: ${target.dieline.file}`, sha: dFile.sha, branch: GH.branch });
+      } catch (e) { console.error('删除刀模文件失败:', e); }
+    }
+    // 更新 entries.json
+    const filtered = entries.filter(e => e.id !== id);
+    await ghApi('data/entries.json', 'PUT', { message: `删除记录: ${target.title || id}`, content: encodeJson(filtered), sha: _entriesSha, branch: GH.branch });
+    _entriesSha = (await ghApi('data/entries.json')).sha;
+    ENTRIES = filtered;
     renderGallery();
     closeOverlay('detailOverlay');
   } catch (e) {
@@ -284,7 +402,9 @@ function openEditor(entry) {
         <select id="f_boxType">
           <option value="">请选择</option>
           ${BOX_TYPES.map(t => `<option ${data.boxType===t?'selected':''}>${t}</option>`).join('')}
+          <option value="__custom__" ${data.boxType && !BOX_TYPES.includes(data.boxType) ? 'selected' : ''}>自定义</option>
         </select>
+        <input type="text" id="f_boxTypeCustom" class="custom-input" placeholder="输入自定义盒型名称" value="${data.boxType && !BOX_TYPES.includes(data.boxType) ? esc(data.boxType) : ''}" style="display:none;margin-top:8px">
       </div>
 
       <div class="field-group">
@@ -305,9 +425,18 @@ function openEditor(entry) {
         <label>外观风格标签</label>
         <div class="tag-input-wrap" id="styleTagsWrap">
           ${(data.appearanceStyle||[]).map((s,i)=>`<span class="tag-chip">${esc(s)}<button type="button" data-del="${i}">&times;</button></span>`).join('')}
-          <input type="text" id="f_styleInput" placeholder="输入后回车添加">
+          <div class="input-with-hash">
+            <span class="hash">#</span>
+            <input type="text" id="f_styleInput" placeholder="输入自定义标签后回车添加">
+          </div>
         </div>
-        <p class="hint">可选：${STYLES.join('、')}</p>
+        <p class="hint-label">可选标签（点击添加）：</p>
+        <div class="style-suggestions" id="styleSuggestions">
+          ${STYLES.map(s => {
+            const added = (data.appearanceStyle||[]).includes(s);
+            return `<span class="style-suggestion${added?' added':''}" data-val="${esc(s)}">#${esc(s)}</span>`;
+          }).join('')}
+        </div>
       </div>
 
       <div class="field-group">
@@ -351,6 +480,7 @@ function openEditor(entry) {
           <p>点击或拖拽照片到这里上传（正面/侧面/开箱/内衬等）</p>
         </div>
         <div class="photo-preview-grid" id="photoPreviewGrid"></div>
+        <p class="upload-warning" id="pngWarning" hidden>⚠️ 检测到 PNG 图片，部署到 GitHub 后不会显示（被 .gitignore 排除）。建议转为 JPG 格式后上传。</p>
       </div>
 
       <div class="field-group">
@@ -400,6 +530,25 @@ function openEditor(entry) {
   // 风格标签输入
   bindTagInput('styleTagsWrap', 'f_styleInput');
 
+  // 风格标签建议点击
+  document.querySelectorAll('#styleSuggestions .style-suggestion').forEach(sug => {
+    if (sug.classList.contains('added')) return;
+    sug.addEventListener('click', () => {
+      const input = document.getElementById('f_styleInput');
+      input.value = sug.dataset.val;
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+  });
+
+  // 盒型自定义切换
+  const boxTypeSel = document.getElementById('f_boxType');
+  const boxTypeCustom = document.getElementById('f_boxTypeCustom');
+  function toggleBoxTypeCustom() {
+    boxTypeCustom.style.display = boxTypeSel.value === '__custom__' ? 'block' : 'none';
+  }
+  boxTypeSel.addEventListener('change', toggleBoxTypeCustom);
+  toggleBoxTypeCustom();
+
   // 按钮
   document.getElementById('editorClose').onclick = () => closeOverlay('editorOverlay');
   document.getElementById('editorCancel').onclick = () => closeOverlay('editorOverlay');
@@ -433,6 +582,11 @@ async function handlePhotoFiles(files, photos) {
 
 function renderPhotoPreview(photos) {
   const grid = document.getElementById('photoPreviewGrid');
+  const warn = document.getElementById('pngWarning');
+  if (warn) {
+    const hasPng = photos.some(p => p.file && p.file.toLowerCase().endsWith('.png'));
+    warn.hidden = !hasPng;
+  }
   const ANGLES = ['正面','侧面','背面','顶部','底部','开箱','内衬','其他'];
   grid.innerHTML = photos.map((p, i) => `
     <div class="photo-preview-item">
@@ -460,46 +614,63 @@ async function uploadFile(file, folder) {
     r.onerror = reject;
     r.readAsDataURL(file);
   });
-  const res = await fetch('/api/upload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folder, data: dataUrl, filename: file.name }),
+  const base64 = dataUrl.split(',')[1];
+  const ext = file.name.match(/\.(png|jpg|jpeg|webp|gif|pdf)$/i)?.[0]?.toLowerCase() || '.bin';
+  const safeName = genId() + ext;
+  const path = folder === 'dielines' ? `dielines/${safeName}` : `images/${safeName}`;
+  await ghApi(path, 'PUT', {
+    message: `上传文件: ${safeName}`,
+    content: base64,
+    branch: GH.branch,
   });
-  if (!res.ok) throw new Error('上传失败');
-  return res.json();
+  return { file: safeName, url: `/${folder === 'dielines' ? 'dielines' : 'images'}/${safeName}` };
+}
 }
 
 function bindTagInput(wrapId, inputId) {
   const wrap = document.getElementById(wrapId);
   const input = document.getElementById(inputId);
+  const insertRef = input.parentElement || input;
+  function markSuggestion(val, added) {
+    const clean = val.replace(/^#/, '').trim();
+    const sug = document.querySelector(`.style-suggestion[data-val="${clean}"]`);
+    if (sug) sug.classList.toggle('added', added);
+  }
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const val = input.value.trim();
+      let val = input.value.trim();
       if (!val) return;
+      if (!val.startsWith('#')) val = '#' + val;
       // 获取已有标签
       const chips = wrap.querySelectorAll('.tag-chip');
-      const existing = Array.from(chips).map(c => c.textContent.replace(/\times$/,'').trim());
+      const existing = Array.from(chips).map(c => c.textContent.replace(/\s*×\s*$/,'').trim());
       if (existing.includes(val)) { input.value = ''; return; }
       const chip = document.createElement('span');
       chip.className = 'tag-chip';
       chip.innerHTML = `${esc(val)} <button type="button" data-del="new">&times;</button>`;
-      chip.querySelector('button').onclick = () => chip.remove();
-      wrap.insertBefore(chip, input);
+      chip.querySelector('button').onclick = () => { chip.remove(); markSuggestion(val, false); };
+      wrap.insertBefore(chip, insertRef);
+      markSuggestion(val, true);
       input.value = '';
     }
   });
   // 已有标签的删除按钮
   wrap.querySelectorAll('.tag-chip button[data-del]').forEach(btn => {
     if (btn.dataset.del === 'new') return;
-    btn.onclick = () => btn.parentElement.remove();
+    btn.onclick = () => {
+      const chip = btn.parentElement;
+      const val = chip.textContent.replace(/\s*×\s*$/,'').trim();
+      chip.remove();
+      markSuggestion(val, false);
+    };
   });
 }
 
 function collectForm(photos, dieline) {
   // 收集风格标签
   const styleTags = Array.from(document.querySelectorAll('#styleTagsWrap .tag-chip'))
-    .map(c => c.textContent.replace(/\times?$/,'').trim()).filter(Boolean);
+    .map(c => c.textContent.replace(/\s*×\s*$/,'').trim()).filter(Boolean);
 
   const dimL = document.getElementById('f_dimL').value;
   const dimW = document.getElementById('f_dimW').value;
@@ -509,7 +680,9 @@ function collectForm(photos, dieline) {
   return {
     title: document.getElementById('f_title').value.trim(),
     date: document.getElementById('f_date').value,
-    boxType: document.getElementById('f_boxType').value,
+    boxType: document.getElementById('f_boxType').value === '__custom__'
+      ? document.getElementById('f_boxTypeCustom').value.trim()
+      : document.getElementById('f_boxType').value,
     dimensions: (dimL||dimW||dimH) ? { L: +dimL||null, W: +dimW||null, H: +dimH||null } : null,
     insertStructure: document.getElementById('f_insert').value.trim(),
     appearanceStyle: styleTags,
@@ -530,20 +703,39 @@ function collectForm(photos, dieline) {
 
 async function saveEntry(payload, id) {
   try {
-    const url = id ? `/api/entries/${encodeURIComponent(id)}` : '/api/entries';
-    const method = id ? 'PUT' : 'POST';
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+    // 从 GitHub 读取最新数据
+    const file = await ghApi('data/entries.json');
+    const entries = file ? decodeJson(file.content) : [];
+    _entriesSha = file ? file.sha : null;
+
+    if (id) {
+      const idx = entries.findIndex(e => e.id === id);
+      if (idx === -1) throw new Error('记录不存在');
+      entries[idx] = { ...entries[idx], ...payload, id, updatedAt: new Date().toISOString() };
+    } else {
+      const entry = {
+        id: genId(),
+        createdAt: new Date().toISOString(),
+        ...payload,
+      };
+      entries.unshift(entry);
+      payload = entry; // 用于本地更新
+    }
+
+    // 写回 GitHub
+    await ghApi('data/entries.json', 'PUT', {
+      message: id ? `更新记录: ${payload.title || id}` : `新建记录: ${payload.title || ''}`,
+      content: encodeJson(entries),
+      sha: _entriesSha,
+      branch: GH.branch,
     });
-    if (!res.ok) throw new Error('保存失败');
-    const saved = await res.json();
+    _entriesSha = (await ghApi('data/entries.json')).sha;
+
     if (id) {
       const idx = ENTRIES.findIndex(e => e.id === id);
-      if (idx > -1) ENTRIES[idx] = saved;
+      if (idx > -1) ENTRIES[idx] = { ...ENTRIES[idx], ...payload, id };
     } else {
-      ENTRIES.unshift(saved);
+      ENTRIES.unshift(payload);
     }
     closeOverlay('editorOverlay');
     renderGallery();
@@ -568,16 +760,43 @@ function esc(s) {
 
 // ========== 事件绑定 ==========
 function bindEvents() {
-  ['searchInput','filterBoxType','filterMaterial','filterCategory','filterStyle','filterDateFrom','filterDateTo']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      el.addEventListener('input', renderGallery);
-      el.addEventListener('change', renderGallery);
-    });
+  // 点击搜索按钮执行筛选
+  document.getElementById('searchBtn').addEventListener('click', renderGallery);
+  // 搜索框回车也执行筛选
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderGallery();
+  });
+
+  // 模式徽章点击：未连接时弹出 Token 输入
+  document.getElementById('modeBadge').addEventListener('click', () => {
+    if (!EDIT_MODE) showTokenDialog();
+  });
+
+  // Token 弹层按钮
+  document.getElementById('tokenSave').addEventListener('click', saveTokenAndReload);
+  document.getElementById('tokenCancel').addEventListener('click', () => closeOverlay('tokenOverlay'));
+  document.getElementById('tokenInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveTokenAndReload();
+  });
+
+  // 盒型筛选：选"自定义"时显示输入框
+  const boxTypeSel = document.getElementById('filterBoxType');
+  const boxTypeCustom = document.getElementById('filterBoxTypeCustom');
+  boxTypeSel.addEventListener('change', () => {
+    boxTypeCustom.hidden = boxTypeSel.value !== '__custom__';
+    if (boxTypeCustom.hidden) boxTypeCustom.value = '';
+    renderGallery();
+  });
+  // 自定义输入框回车触发筛选
+  boxTypeCustom.addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderGallery();
+  });
 
   document.getElementById('clearFilters').addEventListener('click', () => {
     ['searchInput','filterBoxType','filterMaterial','filterCategory','filterStyle','filterDateFrom','filterDateTo']
       .forEach(id => { document.getElementById(id).value = ''; });
+    boxTypeCustom.hidden = true;
+    boxTypeCustom.value = '';
     renderGallery();
   });
 
