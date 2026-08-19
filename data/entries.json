@@ -1,0 +1,59 @@
+[
+  {
+    "id": "20260819-seed01",
+    "createdAt": "2026-08-19T10:00:00.000Z",
+    "title": "示例：一体化纸卡内衬彩盒",
+    "date": "2026-08-19",
+    "boxType": "彩盒",
+    "dimensions": {
+      "L": 180,
+      "W": 120,
+      "H": 55
+    },
+    "insertStructure": "与彩盒一体式纸卡折叠内衬，无需额外胶水，展开即可放产品，收拢即合盒。卡槽高度刚好压住产品防止上下窜动。",
+    "appearanceStyle": [
+      "简约",
+      "高级感"
+    ],
+    "material": {
+      "type": "卡纸",
+      "thickness": "0.45mm",
+      "ecoFriendly": true,
+      "note": "FSC认证纸板"
+    },
+    "productCategory": "消费电子",
+    "unboxingExperience": "打开翻盖后产品居中嵌在卡槽里，第一眼干净利落。配件藏在下方夹层，有层次感。",
+    "inspirationNotes": "一体化内衬省去EPE，结构简洁又足够固定产品，适合轻量消费电子。",
+    "photos": [],
+    "dieline": null,
+    "source": "样品室"
+  },
+  {
+    "id": "20260819-seed02",
+    "createdAt": "2026-08-19T10:01:00.000Z",
+    "title": "示例：天地盖+珍珠棉卡槽",
+    "date": "2026-08-18",
+    "boxType": "天地盖",
+    "dimensions": {
+      "L": 240,
+      "W": 160,
+      "H": 80
+    },
+    "insertStructure": "天地盖结构，内附EPE卡槽珍珠棉，上盖取下后产品被卡槽稳稳固定。",
+    "appearanceStyle": [
+      "高级感"
+    ],
+    "material": {
+      "type": "EPE珍珠棉",
+      "thickness": "10mm",
+      "ecoFriendly": false,
+      "note": ""
+    },
+    "productCategory": "礼品",
+    "unboxingExperience": "揭盖有阻尼感，珍珠棉白色衬托产品，仪式感强。",
+    "inspirationNotes": "天地盖的揭盖阻尼感和EPE卡槽的固定方式值得参考，适合贵重品。",
+    "photos": [],
+    "dieline": null,
+    "source": "京东购买"
+  }
+]

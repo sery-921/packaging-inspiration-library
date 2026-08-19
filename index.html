@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17324d">
+  <title>包装灵感库</title>
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header>
+    <p class="eyebrow">PACKAGING INSPIRATION LIBRARY</p>
+    <h1>包装灵感库</h1>
+    <p>记录打动你的包装结构、外观与开箱体验，日后设计时随时翻找参考。</p>
+  </header>
+
+  <div id="modeBadge" class="mode-badge" hidden></div>
+
+  <main id="app">
+    <!-- 筛选栏 -->
+    <section class="toolbar panel">
+      <div class="toolbar-row">
+        <input id="searchInput" type="search" placeholder="搜索标题、盒型、材料…" class="search-box">
+        <button id="newEntryBtn" class="primary compact-btn" hidden>+ 新建</button>
+      </div>
+      <div class="filter-row">
+        <select id="filterBoxType" class="filter-select"><option value="">盒型</option></select>
+        <select id="filterMaterial" class="filter-select"><option value="">材料</option></select>
+        <select id="filterCategory" class="filter-select"><option value="">品类</option></select>
+        <select id="filterStyle" class="filter-select"><option value="">风格</option></select>
+        <input id="filterDateFrom" type="date" class="filter-date" title="起始日期">
+        <input id="filterDateTo" type="date" class="filter-date" title="截止日期">
+        <button id="clearFilters" class="ghost-btn">清除</button>
+      </div>
+      <p id="resultCount" class="result-count"></p>
+    </section>
+
+    <!-- 画廊网格 -->
+    <section id="gallery" class="gallery"></section>
+    <p id="emptyHint" class="empty-hint" hidden>还没有记录。点击「新建」添加第一条灵感。</p>
+  </main>
+
+  <!-- 详情弹层 -->
+  <div id="detailOverlay" class="overlay" hidden>
+    <div class="overlay-inner" id="detailContent"></div>
+  </div>
+
+  <!-- 编辑弹层 -->
+  <div id="editorOverlay" class="overlay" hidden>
+    <div class="overlay-inner overlay-editor">
+      <form id="editorForm" class="editor-form"></form>
+    </div>
+  </div>
+
+  <!-- 图片灯箱 -->
+  <div id="lightbox" class="lightbox" hidden>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <footer>包装灵感库 · 本地编辑 · 静态发布 · 数据自有</footer>
+  <script src="app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "packaging-inspiration",
+  "version": "0.1.0",
+  "description": "包装灵感记录工具 - 本地编辑 + 静态画廊",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
