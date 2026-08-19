@@ -48,6 +48,14 @@ function encodeJson(obj) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2))));
 }
 
+// 生成唯一 ID
+function genId() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  return `${stamp}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 // ========== 初始化 ==========
 async function init() {
   EDIT_MODE = await detectEditMode();
@@ -624,7 +632,6 @@ async function uploadFile(file, folder) {
     branch: GH.branch,
   });
   return { file: safeName, url: `/${folder === 'dielines' ? 'dielines' : 'images'}/${safeName}` };
-}
 }
 
 function bindTagInput(wrapId, inputId) {
