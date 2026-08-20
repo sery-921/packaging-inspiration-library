@@ -636,11 +636,26 @@ function renderPhotoPreview(photos) {
       <img src="${p.url}" alt="">
       <select data-pidx="${i}">
         ${ANGLES.map(a => `<option ${p.angle===a?'selected':''}>${a}</option>`).join('')}
+        <option value="__custom__" ${p.angle && !ANGLES.includes(p.angle) ? 'selected' : ''}>自定义</option>
       </select>
+      <input type="text" class="custom-angle-input" data-pidx="${i}" placeholder="输入角度" value="${p.angle && !ANGLES.includes(p.angle) ? esc(p.angle) : ''}" style="display:${p.angle && !ANGLES.includes(p.angle) ? 'block' : 'none'};margin-top:4px;width:100%;box-sizing:border-box">
       <button type="button" class="remove" data-ridx="${i}">&times;</button>
     </div>`).join('');
   grid.querySelectorAll('select[data-pidx]').forEach(sel => {
-    sel.addEventListener('change', () => { photos[+sel.dataset.pidx].angle = sel.value; });
+    sel.addEventListener('change', () => {
+      const idx = +sel.dataset.pidx;
+      const input = grid.querySelector(`input.custom-angle-input[data-pidx="${idx}"]`);
+      if (sel.value === '__custom__') {
+        input.style.display = 'block';
+        input.focus();
+      } else {
+        input.style.display = 'none';
+        photos[idx].angle = sel.value;
+      }
+    });
+  });
+  grid.querySelectorAll('input.custom-angle-input[data-pidx]').forEach(inp => {
+    inp.addEventListener('input', () => { photos[+inp.dataset.pidx].angle = inp.value; });
   });
   grid.querySelectorAll('.remove[data-ridx]').forEach(btn => {
     btn.addEventListener('click', () => {
