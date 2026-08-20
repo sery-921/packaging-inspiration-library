@@ -36,9 +36,7 @@
     "boxType": "异型盒",
     "dimensions": null,
     "insertStructure": "",
-    "appearanceStyle": [
-      "#简约"
-    ],
+    "appearanceStyle": [],
     "material": null,
     "productCategory": "美妆",
     "unboxingExperience": "",
@@ -52,6 +50,6 @@
     ],
     "dieline": null,
     "source": "小红书分享",
-    "updatedAt": "2026-08-20T06:40:44.898Z"
+    "updatedAt": "2026-08-20T06:40:51.364Z"
   }
 ]
