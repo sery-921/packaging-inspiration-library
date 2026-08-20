@@ -264,7 +264,7 @@ function openDetail(id) {
   if (!e) return;
   const content = document.getElementById('detailContent');
 
-  const tags = [e.boxType, e.productCategory, e.material?.type, e.material?.ecoFriendly ? '环保材质' : ''].filter(Boolean);
+const tags = [e.boxType, e.productCategory, e.material?.type].filter(Boolean);
   const styleTags = (e.appearanceStyle || []).map(s => `<span class="card-tag">${esc(s)}</span>`).join('');
 
   const photosHtml = (e.photos || []).map(p => `
@@ -448,7 +448,7 @@ function openEditor(entry) {
         </div>
         <p class="hint-label">可选标签（点击添加）：</p>
         <div class="style-suggestions" id="styleSuggestions">
-          ${STYLES.map(s => {
+          ${['环保', ...STYLES].map(s => {
             const added = (data.appearanceStyle||[]).includes(s);
             return `<span class="style-suggestion${added?' added':''}" data-val="${esc(s)}">#${esc(s)}</span>`;
           }).join('')}
@@ -466,10 +466,7 @@ function openEditor(entry) {
       </div>
       <div class="field-group">
         <div class="dim-row">
-          <label>纸板/材料厚度<input type="text" id="f_materialThickness" value="${esc(data.material?.thickness||'')}" placeholder="如 1.2mm"></label>
-          <label><span style="font-size:12px;font-weight:800;color:#50677a;display:block;margin-bottom:5px">环保材质</span>
-            <select id="f_ecoFriendly"><option value="false" ${!data.material?.ecoFriendly?'selected':''}>否</option><option value="true" ${data.material?.ecoFriendly?'selected':''}>是</option></select>
-          </label>
+          <label>材料厚度<input type="text" id="f_materialThickness" value="${esc(data.material?.thickness||'')}" placeholder="如 1.2mm"></label>
           <label>材料备注<input type="text" id="f_materialNote" value="${esc(data.material?.note||'')}" placeholder="补充"></label>
         </div>
       </div>
@@ -737,7 +734,6 @@ function collectForm(photos, dieline) {
     material: matType ? {
       type: matType,
       thickness: document.getElementById('f_materialThickness').value.trim(),
-      ecoFriendly: document.getElementById('f_ecoFriendly').value === 'true',
       note: document.getElementById('f_materialNote').value.trim(),
     } : null,
     productCategory: document.getElementById('f_category').value === '__custom__'
