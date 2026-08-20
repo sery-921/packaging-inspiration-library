@@ -8,7 +8,8 @@
     "dimensions": null,
     "insertStructure": "",
     "appearanceStyle": [
-      "#简约"
+      "#简约",
+      "#高级感"
     ],
     "material": {
       "type": "卡纸",
@@ -33,7 +34,7 @@
     ],
     "dieline": null,
     "source": "",
-    "updatedAt": "2026-08-20T06:55:40.264Z"
+    "updatedAt": "2026-08-20T07:00:38.516Z"
   },
   {
     "id": "20260819103328-cptq",
