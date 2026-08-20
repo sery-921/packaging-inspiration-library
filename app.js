@@ -4,7 +4,7 @@
 const BOX_TYPES = ['飞机盒','异型盒','双插盒','扣底盒','吊孔盒','平粘盒/机包盒','自锁底盒','提手盒','披萨盒','翻盖盒','对盖盒','盘式盒','抽屉盒','未知'];
 const MATERIALS = ['瓦楞纸','卡纸','铜版纸','牛皮纸','EPE珍珠棉','EPS泡沫','吸塑','环保纸塑','未知'];
 const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','未知'];
-const STYLES = ['简约','高级感','丰富','可爱','科技感','复古','自然'];
+const STYLES = ['环保','简约','高级感','丰富','可爱','科技感','复古','自然'];
 
 // GitHub 仓库配置
 const GH = { owner: 'sery-921', repo: 'packaging-inspiration-library', branch: 'main' };
@@ -448,7 +448,7 @@ function openEditor(entry) {
         </div>
         <p class="hint-label">可选标签（点击添加）：</p>
         <div class="style-suggestions" id="styleSuggestions">
-          ${['环保', ...STYLES].map(s => {
+          ${STYLES.map(s => {
             const added = (data.appearanceStyle||[]).includes(s);
             return `<span class="style-suggestion${added?' added':''}" data-val="${esc(s)}">#${esc(s)}</span>`;
           }).join('')}
