@@ -631,31 +631,50 @@ function renderPhotoPreview(photos) {
     warn.hidden = !hasPng;
   }
   const ANGLES = ['正面','侧面','背面','顶部','底部','开箱','内衬','其他'];
-  grid.innerHTML = photos.map((p, i) => `
+  grid.innerHTML = photos.map((p, i) => {
+    const isCustom = p.angle && !ANGLES.includes(p.angle);
+    return `
     <div class="photo-preview-item">
       <img src="${p.url}" alt="">
-      <select data-pidx="${i}">
+      <select data-pidx="${i}" style="display:${isCustom ? 'none' : 'block'}">
+        <option value="" ${!p.angle?'selected':''}>角度</option>
         ${ANGLES.map(a => `<option ${p.angle===a?'selected':''}>${a}</option>`).join('')}
-        <option value="__custom__" ${p.angle && !ANGLES.includes(p.angle) ? 'selected' : ''}>自定义</option>
+        <option value="__custom__" ${isCustom?'selected':''}>自定义</option>
       </select>
-      <input type="text" class="custom-angle-input" data-pidx="${i}" placeholder="输入角度" value="${p.angle && !ANGLES.includes(p.angle) ? esc(p.angle) : ''}" style="display:${p.angle && !ANGLES.includes(p.angle) ? 'block' : 'none'};margin-top:4px;width:100%;box-sizing:border-box">
+      <div class="angle-custom-wrap" data-pidx="${i}" style="display:${isCustom ? 'flex' : 'none'};align-items:center;gap:2px">
+        <input type="text" class="angle-custom-input" data-pidx="${i}" value="${isCustom ? esc(p.angle) : ''}" placeholder="输入角度" style="flex:1;min-width:0">
+        <button type="button" class="angle-back-btn" data-pidx="${i}" title="切回下拉" style="flex-shrink:0;cursor:pointer;padding:2px 6px;background:none;border:1px solid #ccc;border-radius:3px">▼</button>
+      </div>
       <button type="button" class="remove" data-ridx="${i}">&times;</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   grid.querySelectorAll('select[data-pidx]').forEach(sel => {
     sel.addEventListener('change', () => {
       const idx = +sel.dataset.pidx;
-      const input = grid.querySelector(`input.custom-angle-input[data-pidx="${idx}"]`);
       if (sel.value === '__custom__') {
-        input.style.display = 'block';
+        sel.style.display = 'none';
+        const wrap = grid.querySelector(`.angle-custom-wrap[data-pidx="${idx}"]`);
+        wrap.style.display = 'flex';
+        const input = wrap.querySelector('input');
         input.focus();
       } else {
-        input.style.display = 'none';
         photos[idx].angle = sel.value;
       }
     });
   });
-  grid.querySelectorAll('input.custom-angle-input[data-pidx]').forEach(inp => {
+  grid.querySelectorAll('input.angle-custom-input').forEach(inp => {
     inp.addEventListener('input', () => { photos[+inp.dataset.pidx].angle = inp.value; });
+  });
+  grid.querySelectorAll('.angle-back-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.pidx;
+      const wrap = btn.parentElement;
+      wrap.style.display = 'none';
+      const sel = grid.querySelector(`select[data-pidx="${idx}"]`);
+      sel.style.display = 'block';
+      sel.selectedIndex = 0;
+      photos[idx].angle = '';
+    });
   });
   grid.querySelectorAll('.remove[data-ridx]').forEach(btn => {
     btn.addEventListener('click', () => {
