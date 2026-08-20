@@ -585,7 +585,15 @@ function openEditor(entry) {
   document.getElementById('editorSave').onclick = async () => {
     const payload = collectForm(photos, dieline);
     if (!payload.title) { alert('请填写标题'); return; }
-    await saveEntry(payload, isEdit ? data.id : null);
+    const btn = document.getElementById('editorSave');
+    btn.disabled = true;
+    btn.textContent = '保存中…';
+    try {
+      await saveEntry(payload, isEdit ? data.id : null);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '保存';
+    }
   };
 
   showOverlay('editorOverlay');
@@ -756,14 +764,13 @@ async function saveEntry(payload, id) {
       payload = entry; // 用于本地更新
     }
 
-    // 写回 GitHub
-    await ghApi('data/entries.json', 'PUT', {
+    const putRes = await ghApi('data/entries.json', 'PUT', {
       message: id ? `更新记录: ${payload.title || id}` : `新建记录: ${payload.title || ''}`,
       content: encodeJson(entries),
       sha: _entriesSha,
       branch: GH.branch,
     });
-    _entriesSha = (await ghApi('data/entries.json')).sha;
+    _entriesSha = putRes?.content?.sha || _entriesSha;
 
     if (id) {
       const idx = ENTRIES.findIndex(e => e.id === id);
