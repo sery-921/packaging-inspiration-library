@@ -224,12 +224,20 @@ function renderGallery() {
 
   gallery.innerHTML = filtered.map(e => {
     const cover = (e.photos && e.photos[0]) ? e.photos[0].url : '';
-    const tags = [
-      e.boxType,
-      e.material ? e.material.type : '',
-      e.productCategory,
-    ].filter(Boolean).slice(0, 3);
-    const photoCount = (e.photos && e.photos.length) ? e.photos.length : 0;
+   const tags = [
+     e.boxType,
+     e.material ? e.material.type : '',
+     e.productCategory,
+   ].filter(Boolean).slice(0, 3);
+    const styles = (e.appearanceStyle || []).slice().sort((a, b) => {
+      const ia = STYLES.indexOf(a), ib = STYLES.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+    if (styles.length > 0) {
+      const extra = styles.length > 1 ? ` +${styles.length - 1}` : '';
+      tags.push(styles[0] + extra);
+    }
+   const photoCount = (e.photos && e.photos.length) ? e.photos.length : 0;
     const photoBadge = photoCount > 1 ? `<span class="card-photo-count">${photoCount}张</span>` : '';
     const imgHtml = cover
       ? `<div class="card-img-wrap"><img class="card-img" src="${cover}" alt="${esc(e.title)}" loading="lazy">${photoBadge}</div>`
