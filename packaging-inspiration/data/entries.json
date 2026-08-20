@@ -1,0 +1,41 @@
+[
+  {
+    "id": "20260819103328-cptq",
+    "createdAt": "2026-08-19T02:33:28.669Z",
+    "title": "面霜内托",
+    "date": "2026-08-19",
+    "boxType": "异型盒",
+    "dimensions": null,
+    "insertStructure": "",
+    "appearanceStyle": [],
+    "material": {
+      "type": "卡纸",
+      "thickness": "",
+      "ecoFriendly": false,
+      "note": ""
+    },
+    "productCategory": "美妆",
+    "unboxingExperience": "",
+    "inspirationNotes": "",
+    "photos": [
+      {
+        "url": "images/20260819103259-l3h7.png",
+        "file": "20260819103259-l3h7.png",
+        "angle": ""
+      },
+      {
+        "url": "images/20260819103315-l6fo.jpg",
+        "file": "20260819103315-l6fo.jpg",
+        "angle": ""
+      },
+      {
+        "url": "images/20260819103320-vubb.png",
+        "file": "20260819103320-vubb.png",
+        "angle": ""
+      }
+    ],
+    "dieline": null,
+    "source": "小红书分享",
+    "updatedAt": "2026-08-19T02:37:33.306Z"
+  }
+]

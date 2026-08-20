@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17324d">
+  <title>包装灵感库</title>
+<link rel="stylesheet" href="style.css?v=11">
+</head>
+<body>
+  <header>
+    <p class="eyebrow">PACKAGING INSPIRATION LIBRARY</p>
+    <h1>包装灵感库</h1>
+    <p>记录打动你的包装结构、外观与开箱体验，日后设计时随时翻找参考。</p>
+  </header>
+
+  <div id="modeBadge" class="mode-badge" hidden></div>
+
+  <main id="app">
+    <!-- 筛选栏 -->
+    <section class="toolbar panel">
+      <div class="action-row">
+        <div class="btn-group">
+          <button id="newEntryBtn" class="primary compact-btn" hidden>+ 新建记录</button>
+          <p id="newEntryHint" class="btn-hint" hidden>添加一条新的包装灵感记录</p>
+        </div>
+      </div>
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="searchInput" type="search" placeholder="搜索标题、盒型、材料…" class="search-box">
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="filterBoxType" class="filter-select"><option value="">盒型</option></select>
+        <input id="filterBoxTypeCustom" type="text" class="filter-select custom-filter-input" placeholder="输入盒型名称…" hidden>
+        <select id="filterMaterial" class="filter-select"><option value="">材料</option></select>
+        <select id="filterCategory" class="filter-select"><option value="">品类</option></select>
+        <select id="filterStyle" class="filter-select"><option value="">风格</option></select>
+        <div class="date-range">
+          <span class="date-label">日期</span>
+          <input id="filterDateFrom" type="date" class="filter-date" title="起始日期">
+          <span class="date-sep">至</span>
+          <input id="filterDateTo" type="date" class="filter-date" title="截止日期">
+        </div>
+        <button id="clearFilters" class="ghost-btn">清除</button>
+      </div>
+      <div class="search-action-row">
+        <div class="btn-group">
+          <button id="searchBtn" class="search-btn">搜索</button>
+          <p class="btn-hint">按关键词或筛选条件查找已有记录</p>
+        </div>
+      </div>
+     <p id="resultCount" class="result-count"></p>
+    </section>
+
+    <!-- 画廊网格 -->
+    <section id="gallery" class="gallery"></section>
+    <p id="emptyHint" class="empty-hint" hidden>还没有记录。点击「新建」添加第一条灵感。</p>
+  </main>
+
+  <!-- 详情弹层 -->
+  <div id="detailOverlay" class="overlay" hidden>
+    <div class="overlay-inner" id="detailContent"></div>
+  </div>
+
+  <!-- 编辑弹层 -->
+  <div id="editorOverlay" class="overlay" hidden>
+    <div class="overlay-inner overlay-editor">
+      <form id="editorForm" class="editor-form"></form>
+    </div>
+  </div>
+
+  <!-- 图片灯箱 -->
+  <div id="lightbox" class="lightbox" hidden>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <footer>包装灵感库 · 本地编辑 · 静态发布 · 数据自有</footer>
+  <script src="app.js?v=11"></script>
+</body>
+</html>
