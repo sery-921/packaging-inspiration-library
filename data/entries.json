@@ -13,14 +13,14 @@
     "unboxingExperience": "",
     "inspirationNotes": "",
     "photos": [
-      {
-        "url": "/images/20260820103540-ltu7.jpg",
-        "file": "20260820103540-ltu7.jpg",
-        "angle": ""
-      },
-      {
-        "url": "/images/20260820103547-ger1.jpg",
-        "file": "20260820103547-ger1.jpg",
+     {
+        "url": "images/20260820103540-ltu7.jpg",
+       "file": "20260820103540-ltu7.jpg",
+       "angle": ""
+     },
+     {
+        "url": "images/20260820103547-ger1.jpg",
+       "file": "20260820103547-ger1.jpg",
         "angle": ""
       }
     ],

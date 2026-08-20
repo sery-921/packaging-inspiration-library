@@ -628,10 +628,10 @@ async function uploadFile(file, folder) {
   const path = folder === 'dielines' ? `dielines/${safeName}` : `images/${safeName}`;
   await ghApi(path, 'PUT', {
     message: `上传文件: ${safeName}`,
-    content: base64,
-    branch: GH.branch,
-  });
-  return { file: safeName, url: `/${folder === 'dielines' ? 'dielines' : 'images'}/${safeName}` };
+   content: base64,
+   branch: GH.branch,
+ });
+  return { file: safeName, url: `${folder === 'dielines' ? 'dielines' : 'images'}/${safeName}` };
 }
 
 function bindTagInput(wrapId, inputId) {
