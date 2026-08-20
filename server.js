@@ -148,7 +148,7 @@ async function handleApi(req, res, url) {
     const safeName = genId() + ext;
     const fp = path.join(base, safeName);
     await fs.writeFile(fp, buf);
-    return sendJson(res, 200, { file: safeName, url: `/${dir}/${safeName}` });
+    return sendJson(res, 200, { file: safeName, url: `${dir}/${safeName}` });
   }
 
   return sendJson(res, 404, { error: 'unknown api' });
