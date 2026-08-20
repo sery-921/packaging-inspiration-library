@@ -2,8 +2,8 @@
 
 // 盒型/品类/风格/材料 选项（可随数据增长自动扩展）
 const BOX_TYPES = ['飞机盒','异型盒','双插盒','扣底盒','吊孔盒','平粘盒/机包盒','自锁底盒','提手盒','披萨盒','翻盖盒','对盖盒','盘式盒','抽屉盒','未知'];
-const MATERIALS = ['瓦楞纸','纸板','卡纸','EPE珍珠棉','泡沫','塑料','木浆甘蔗渣','环保纸塑','其他'];
-const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','其他'];
+const MATERIALS = ['瓦楞纸','纸板','卡纸','EPE珍珠棉','泡沫','塑料','木浆甘蔗渣','环保纸塑','未知'];
+const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','未知'];
 const STYLES = ['简约','高级感','丰富','可爱','科技感','复古','自然','极简'];
 
 let ENTRIES = [];
@@ -78,8 +78,30 @@ function populateFilterOptions() {
     separator: '__custom_sep__',
     labels: { '__custom__': '自定义' },
   });
-  fillSelect('filterMaterial', MATERIALS);
-  fillSelect('filterCategory', CATEGORIES);
+  // 材料筛选：预设列表 + 自定义选项 + 数据中已存在的自定义材料
+  const customMaterials = ENTRIES
+    .map(e => e.material?.type)
+    .filter(mt => mt && !MATERIALS.includes(mt));
+  const uniqueMatCustom = [...new Set(customMaterials)];
+  const allMaterials = uniqueMatCustom.length
+    ? [...MATERIALS, '__custom_sep__', ...uniqueMatCustom, '__custom__']
+    : [...MATERIALS, '__custom__'];
+  fillSelect('filterMaterial', allMaterials, {
+    separator: '__custom_sep__',
+    labels: { '__custom__': '自定义' },
+  });
+  // 品类筛选：预设列表 + 自定义选项 + 数据中已存在的自定义品类
+  const customCategories = ENTRIES
+    .map(e => e.productCategory)
+    .filter(ct => ct && !CATEGORIES.includes(ct));
+  const uniqueCatCustom = [...new Set(customCategories)];
+  const allCategories = uniqueCatCustom.length
+    ? [...CATEGORIES, '__custom_sep__', ...uniqueCatCustom, '__custom__']
+    : [...CATEGORIES, '__custom__'];
+  fillSelect('filterCategory', allCategories, {
+    separator: '__custom_sep__',
+    labels: { '__custom__': '自定义' },
+  });
   fillSelect('filterStyle', STYLES);
 }
 
@@ -125,8 +147,16 @@ function getFiltered() {
       if (!cv) return true; // 未输入文字时不过滤
       if (!e.boxType || !e.boxType.toLowerCase().includes(cv)) return false;
     } else if (ft.boxType && ft.boxType !== '__custom_sep__' && e.boxType !== ft.boxType) return false;
-    if (ft.material && (!e.material || e.material.type !== ft.material)) return false;
-    if (ft.category && e.productCategory !== ft.category) return false;
+    if (ft.material === '__custom__') {
+      const cv = document.getElementById('filterMaterialCustom').value.trim().toLowerCase();
+      if (!cv) return true;
+      if (!e.material?.type || !e.material.type.toLowerCase().includes(cv)) return false;
+    } else if (ft.material && ft.material !== '__custom_sep__' && (!e.material || e.material.type !== ft.material)) return false;
+    if (ft.category === '__custom__') {
+      const cv = document.getElementById('filterCategoryCustom').value.trim().toLowerCase();
+      if (!cv) return true;
+      if (!e.productCategory || !e.productCategory.toLowerCase().includes(cv)) return false;
+    } else if (ft.category && ft.category !== '__custom_sep__' && e.productCategory !== ft.category) return false;
     if (ft.style && !(e.appearanceStyle || []).some(s => s === ft.style || s === '#' + ft.style || s.replace(/^#/,'') === ft.style)) return false;
     if (ft.dateFrom && e.date < ft.dateFrom) return false;
     if (ft.dateTo && e.date > ft.dateTo) return false;
@@ -360,7 +390,9 @@ function openEditor(entry) {
         <select id="f_materialType">
           <option value="">请选择</option>
           ${MATERIALS.map(m=>`<option ${data.material?.type===m?'selected':''}>${m}</option>`).join('')}
+          <option value="__custom__" ${data.material?.type && !MATERIALS.includes(data.material?.type) ? 'selected' : ''}>自定义</option>
         </select>
+        <input type="text" id="f_materialTypeCustom" class="custom-input" placeholder="输入自定义材料名称" value="${data.material?.type && !MATERIALS.includes(data.material?.type) ? esc(data.material?.type) : ''}" style="display:none;margin-top:8px">
       </div>
       <div class="field-group">
         <div class="dim-row">
@@ -377,7 +409,9 @@ function openEditor(entry) {
         <select id="f_category">
           <option value="">请选择</option>
           ${CATEGORIES.map(c=>`<option ${data.productCategory===c?'selected':''}>${c}</option>`).join('')}
+          <option value="__custom__" ${data.productCategory && !CATEGORIES.includes(data.productCategory) ? 'selected' : ''}>自定义</option>
         </select>
+        <input type="text" id="f_categoryCustom" class="custom-input" placeholder="输入自定义品类名称" value="${data.productCategory && !CATEGORIES.includes(data.productCategory) ? esc(data.productCategory) : ''}" style="display:none;margin-top:8px">
       </div>
 
       <div class="field-group">
@@ -391,7 +425,7 @@ function openEditor(entry) {
       </div>
 
       <div class="field-group">
-        <label>照片（可多角度）</label>
+        <label>照片（可多角度，只允许JPG）</label>
         <div class="photo-upload-area" id="photoUploadArea">
           <p>点击或拖拽照片到这里上传（正面/侧面/开箱/内衬等）</p>
         </div>
@@ -405,7 +439,7 @@ function openEditor(entry) {
           <input type="file" id="f_dieline" accept=".pdf,.jpg,.jpeg,.png">
           <span class="file-name" id="dielineName">${data.dieline?esc(data.dieline.file||''):''}</span>
         </div>
-        <p class="hint">前期手动上传刀模文件；后续支持按尺寸自动生成为加分项。</p>
+        <p class="hint">前期手动上传刀模文件，后期考虑优化为按尺寸自动生成。</p>
       </div>
 
       <div class="field-group">
@@ -464,6 +498,24 @@ function openEditor(entry) {
   }
   boxTypeSel.addEventListener('change', toggleBoxTypeCustom);
   toggleBoxTypeCustom();
+
+  // 材料自定义切换
+  const materialSel = document.getElementById('f_materialType');
+  const materialCustom = document.getElementById('f_materialTypeCustom');
+  function toggleMaterialCustom() {
+    materialCustom.style.display = materialSel.value === '__custom__' ? 'block' : 'none';
+  }
+  materialSel.addEventListener('change', toggleMaterialCustom);
+  toggleMaterialCustom();
+
+  // 品类自定义切换
+  const categorySel = document.getElementById('f_category');
+  const categoryCustom = document.getElementById('f_categoryCustom');
+  function toggleCategoryCustom() {
+    categoryCustom.style.display = categorySel.value === '__custom__' ? 'block' : 'none';
+  }
+  categorySel.addEventListener('change', toggleCategoryCustom);
+  toggleCategoryCustom();
 
   // 按钮
   document.getElementById('editorClose').onclick = () => closeOverlay('editorOverlay');
@@ -587,10 +639,13 @@ function collectForm(photos, dieline) {
   const dimL = document.getElementById('f_dimL').value;
   const dimW = document.getElementById('f_dimW').value;
   const dimH = document.getElementById('f_dimH').value;
-  const matType = document.getElementById('f_materialType').value;
+  const matTypeSel = document.getElementById('f_materialType');
+  const matType = matTypeSel.value === '__custom__'
+    ? document.getElementById('f_materialTypeCustom').value.trim()
+    : matTypeSel.value;
 
   return {
-    title: document.getElementById('f_title').value.trim(),
+  title: document.getElementById('f_title').value.trim(),
     date: document.getElementById('f_date').value,
     boxType: document.getElementById('f_boxType').value === '__custom__'
       ? document.getElementById('f_boxTypeCustom').value.trim()
@@ -604,7 +659,9 @@ function collectForm(photos, dieline) {
       ecoFriendly: document.getElementById('f_ecoFriendly').value === 'true',
       note: document.getElementById('f_materialNote').value.trim(),
     } : null,
-    productCategory: document.getElementById('f_category').value,
+    productCategory: document.getElementById('f_category').value === '__custom__'
+      ? document.getElementById('f_categoryCustom').value.trim()
+      : document.getElementById('f_category').value,
     unboxingExperience: document.getElementById('f_unboxing').value.trim(),
     inspirationNotes: document.getElementById('f_inspiration').value.trim(),
     photos: photos.filter(p => p.url),
@@ -673,11 +730,39 @@ function bindEvents() {
     if (e.key === 'Enter') renderGallery();
   });
 
+  // 材料筛选：选"自定义"时显示输入框
+  const materialSel = document.getElementById('filterMaterial');
+  const materialCustom = document.getElementById('filterMaterialCustom');
+  materialSel.addEventListener('change', () => {
+    materialCustom.hidden = materialSel.value !== '__custom__';
+    if (materialCustom.hidden) materialCustom.value = '';
+    renderGallery();
+  });
+  materialCustom.addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderGallery();
+  });
+
+  // 品类筛选：选"自定义"时显示输入框
+  const categorySel = document.getElementById('filterCategory');
+  const categoryCustom = document.getElementById('filterCategoryCustom');
+  categorySel.addEventListener('change', () => {
+    categoryCustom.hidden = categorySel.value !== '__custom__';
+    if (categoryCustom.hidden) categoryCustom.value = '';
+    renderGallery();
+  });
+  categoryCustom.addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderGallery();
+  });
+
   document.getElementById('clearFilters').addEventListener('click', () => {
     ['searchInput','filterBoxType','filterMaterial','filterCategory','filterStyle','filterDateFrom','filterDateTo']
       .forEach(id => { document.getElementById(id).value = ''; });
     boxTypeCustom.hidden = true;
     boxTypeCustom.value = '';
+    materialCustom.hidden = true;
+    materialCustom.value = '';
+    categoryCustom.hidden = true;
+    categoryCustom.value = '';
     renderGallery();
   });
 
