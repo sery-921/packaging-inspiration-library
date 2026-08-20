@@ -1,5 +1,33 @@
 [
   {
+    "id": "20260820103523-nys0",
+    "createdAt": "2026-08-20T02:35:23.368Z",
+    "title": "精油一片纸内衬",
+    "date": "2026-08-20",
+    "boxType": "",
+    "dimensions": null,
+    "insertStructure": "",
+    "appearanceStyle": [],
+    "material": null,
+    "productCategory": "美妆",
+    "unboxingExperience": "",
+    "inspirationNotes": "",
+    "photos": [
+      {
+        "url": "/images/20260820103417-czfx.jpg",
+        "file": "20260820103417-czfx.jpg",
+        "angle": ""
+      },
+      {
+        "url": "/images/20260820103428-w1tj.jpg",
+        "file": "20260820103428-w1tj.jpg",
+        "angle": ""
+      }
+    ],
+    "dieline": null,
+    "source": ""
+  },
+  {
     "id": "20260819103328-cptq",
     "createdAt": "2026-08-19T02:33:28.669Z",
     "title": "面霜内托",
