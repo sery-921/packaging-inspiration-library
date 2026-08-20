@@ -2,8 +2,8 @@
 
 // 盒型/品类/风格/材料 选项（可随数据增长自动扩展）
 const BOX_TYPES = ['飞机盒','异型盒','双插盒','扣底盒','吊孔盒','平粘盒/机包盒','自锁底盒','提手盒','披萨盒','翻盖盒','对盖盒','盘式盒','抽屉盒','未知'];
-const MATERIALS = ['瓦楞纸','纸板','卡纸','EPE珍珠棉','泡沫','塑料','木浆甘蔗渣','环保纸塑','其他'];
-const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','其他'];
+const MATERIALS = ['瓦楞纸','纸板','卡纸','EPE珍珠棉','泡沫','塑料','木浆甘蔗渣','环保纸塑','未知'];
+const CATEGORIES = ['消费电子','食品','美妆','保健品','礼品','日用品','文具','酒类','未知'];
 const STYLES = ['简约','高级感','丰富','可爱','科技感','复古','自然','极简'];
 
 // GitHub 仓库配置
@@ -452,7 +452,9 @@ function openEditor(entry) {
         <select id="f_materialType">
           <option value="">请选择</option>
           ${MATERIALS.map(m=>`<option ${data.material?.type===m?'selected':''}>${m}</option>`).join('')}
+          <option value="__custom__" ${data.material?.type && !MATERIALS.includes(data.material.type) ? 'selected' : ''}>自定义</option>
         </select>
+        <input type="text" id="f_materialTypeCustom" class="custom-input" placeholder="输入自定义材料名称" value="${data.material?.type && !MATERIALS.includes(data.material.type) ? esc(data.material.type) : ''}" style="display:none;margin-top:8px">
       </div>
       <div class="field-group">
         <div class="dim-row">
@@ -469,7 +471,9 @@ function openEditor(entry) {
         <select id="f_category">
           <option value="">请选择</option>
           ${CATEGORIES.map(c=>`<option ${data.productCategory===c?'selected':''}>${c}</option>`).join('')}
+          <option value="__custom__" ${data.productCategory && !CATEGORIES.includes(data.productCategory) ? 'selected' : ''}>自定义</option>
         </select>
+        <input type="text" id="f_categoryCustom" class="custom-input" placeholder="输入自定义品类名称" value="${data.productCategory && !CATEGORIES.includes(data.productCategory) ? esc(data.productCategory) : ''}" style="display:none;margin-top:8px">
       </div>
 
       <div class="field-group">
@@ -556,6 +560,24 @@ function openEditor(entry) {
   }
   boxTypeSel.addEventListener('change', toggleBoxTypeCustom);
   toggleBoxTypeCustom();
+
+  // 材料自定义切换
+  const matTypeSel = document.getElementById('f_materialType');
+  const matTypeCustom = document.getElementById('f_materialTypeCustom');
+  function toggleMatTypeCustom() {
+    matTypeCustom.style.display = matTypeSel.value === '__custom__' ? 'block' : 'none';
+  }
+  matTypeSel.addEventListener('change', toggleMatTypeCustom);
+  toggleMatTypeCustom();
+
+  // 品类自定义切换
+  const categorySel = document.getElementById('f_category');
+  const categoryCustom = document.getElementById('f_categoryCustom');
+  function toggleCategoryCustom() {
+    categoryCustom.style.display = categorySel.value === '__custom__' ? 'block' : 'none';
+  }
+  categorySel.addEventListener('change', toggleCategoryCustom);
+  toggleCategoryCustom();
 
   // 按钮
   document.getElementById('editorClose').onclick = () => closeOverlay('editorOverlay');
@@ -682,7 +704,10 @@ function collectForm(photos, dieline) {
   const dimL = document.getElementById('f_dimL').value;
   const dimW = document.getElementById('f_dimW').value;
   const dimH = document.getElementById('f_dimH').value;
-  const matType = document.getElementById('f_materialType').value;
+  const matTypeSel = document.getElementById('f_materialType');
+  const matType = matTypeSel.value === '__custom__'
+    ? document.getElementById('f_materialTypeCustom').value.trim()
+    : matTypeSel.value;
 
   return {
     title: document.getElementById('f_title').value.trim(),
@@ -699,7 +724,9 @@ function collectForm(photos, dieline) {
       ecoFriendly: document.getElementById('f_ecoFriendly').value === 'true',
       note: document.getElementById('f_materialNote').value.trim(),
     } : null,
-    productCategory: document.getElementById('f_category').value,
+    productCategory: document.getElementById('f_category').value === '__custom__'
+      ? document.getElementById('f_categoryCustom').value.trim()
+      : document.getElementById('f_category').value,
     unboxingExperience: document.getElementById('f_unboxing').value.trim(),
     inspirationNotes: document.getElementById('f_inspiration').value.trim(),
     photos: photos.filter(p => p.url),
