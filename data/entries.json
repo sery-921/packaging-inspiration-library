@@ -13,14 +13,14 @@
     "unboxingExperience": "",
     "inspirationNotes": "",
     "photos": [
-     {
+      {
         "url": "images/20260820103540-ltu7.jpg",
-       "file": "20260820103540-ltu7.jpg",
-       "angle": ""
-     },
-     {
+        "file": "20260820103540-ltu7.jpg",
+        "angle": ""
+      },
+      {
         "url": "images/20260820103547-ger1.jpg",
-       "file": "20260820103547-ger1.jpg",
+        "file": "20260820103547-ger1.jpg",
         "angle": ""
       }
     ],
@@ -37,12 +37,7 @@
     "dimensions": null,
     "insertStructure": "",
     "appearanceStyle": [],
-    "material": {
-      "type": "卡纸",
-      "thickness": "",
-      "ecoFriendly": false,
-      "note": ""
-    },
+    "material": null,
     "productCategory": "美妆",
     "unboxingExperience": "",
     "inspirationNotes": "",
@@ -55,6 +50,6 @@
     ],
     "dieline": null,
     "source": "小红书分享",
-    "updatedAt": "2026-08-20T01:20:32.522Z"
+    "updatedAt": "2026-08-20T06:40:38.623Z"
   }
 ]
