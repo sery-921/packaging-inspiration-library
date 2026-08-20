@@ -7,7 +7,9 @@
     "boxType": "",
     "dimensions": null,
     "insertStructure": "",
-    "appearanceStyle": [],
+    "appearanceStyle": [
+      "#环保"
+    ],
     "material": null,
     "productCategory": "美妆",
     "unboxingExperience": "",
@@ -26,7 +28,7 @@
     ],
     "dieline": null,
     "source": "",
-    "updatedAt": "2026-08-20T07:04:51.835Z"
+    "updatedAt": "2026-08-20T07:11:03.678Z"
   },
   {
     "id": "20260819103328-cptq",
