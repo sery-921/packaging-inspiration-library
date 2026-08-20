@@ -487,7 +487,7 @@ function openEditor(entry) {
       </div>
 
       <div class="field-group">
-        <label>照片（可多角度）</label>
+        <label>照片（可多角度，只允许JPG）</label>
         <div class="photo-upload-area" id="photoUploadArea">
           <p>点击或拖拽照片到这里上传（正面/侧面/开箱/内衬等）</p>
         </div>
@@ -501,7 +501,7 @@ function openEditor(entry) {
           <input type="file" id="f_dieline" accept=".pdf,.jpg,.jpeg,.png">
           <span class="file-name" id="dielineName">${data.dieline?esc(data.dieline.file||''):''}</span>
         </div>
-        <p class="hint">前期手动上传刀模文件；后续支持按尺寸自动生成为加分项。</p>
+        <p class="hint">前期手动上传刀模文件，后期考虑优化为按尺寸自动生成。</p>
       </div>
 
       <div class="field-group">
