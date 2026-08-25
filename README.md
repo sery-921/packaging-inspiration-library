@@ -32,4 +32,4 @@
 
 ## 技术栈
 
-纯 Node.js（内置 http 模块，零依赖）+ 原生 HTML/CSS/JS，与装箱工具风格一致。
+纯 Node.js（内置 http 模块，零依赖）+ 原生 HTML/CSS/JS。
