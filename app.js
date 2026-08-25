@@ -13,6 +13,17 @@ let ENTRIES = [];
 let EDIT_MODE = false;
 let _entriesSha = null; // entries.json 的 git sha，更新时需要
 
+// 编辑模式下用 raw.githubusercontent.com 直链访问图片，
+// 上传后立即可见，无需等待 GitHub Pages 重建
+function resolveImgUrl(path) {
+  if (!path) return '';
+  if (/^(https?:|data:)/i.test(path)) return path;
+  if (EDIT_MODE) {
+    return `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${path}`;
+  }
+  return path;
+}
+
 // 获取 token（localStorage）
 function getToken() { return localStorage.getItem('gh_token') || ''; }
 function setToken(t) { localStorage.setItem('gh_token', t); }
@@ -240,8 +251,8 @@ function renderGallery() {
    const photoCount = (e.photos && e.photos.length) ? e.photos.length : 0;
     const photoBadge = photoCount > 1 ? `<span class="card-photo-count">${photoCount}张</span>` : '';
     const imgHtml = cover
-      ? `<div class="card-img-wrap"><img class="card-img" src="${cover}" alt="${esc(e.title)}" loading="lazy">${photoBadge}</div>`
-      : `<div class="card-img-wrap"><div class="card-img-placeholder">暂无图片</div>${photoBadge}</div>`;
+     ? `<div class="card-img-wrap"><img class="card-img" src="${resolveImgUrl(cover)}" alt="${esc(e.title)}" loading="lazy">${photoBadge}</div>`
+     : `<div class="card-img-wrap"><div class="card-img-placeholder">暂无图片</div>${photoBadge}</div>`;
     return `<div class="card" data-id="${esc(e.id)}">
       ${imgHtml}
       <div class="card-body">
@@ -269,12 +280,12 @@ const tags = [e.boxType, e.productCategory, e.material?.type].filter(Boolean);
 
   const photosHtml = (e.photos || []).map(p => `
     <div class="photo-item">
-      <img src="${p.url}" alt="${esc(p.angle || '')}" loading="lazy">
+     <img src="${resolveImgUrl(p.url)}" alt="${esc(p.angle || '')}" loading="lazy">
       ${p.angle ? `<span class="photo-angle">${esc(p.angle)}</span>` : ''}
     </div>`).join('');
 
   const dielineHtml = e.dieline && e.dieline.url
-    ? `<a class="detail-dieline" href="${e.dieline.url}" target="_blank">📎 刀模文件 ${esc(e.dieline.format || '')}</a>`
+    ? `<a class="detail-dieline" href="${resolveImgUrl(e.dieline.url)}" target="_blank">📎 刀模文件 ${esc(e.dieline.format || '')}</a>`
     : '';
 
   const actionsHtml = EDIT_MODE ? `
@@ -635,7 +646,7 @@ function renderPhotoPreview(photos) {
     const isCustom = p.angle && !ANGLES.includes(p.angle);
     return `
     <div class="photo-preview-item">
-      <img src="${p.url}" alt="">
+      <img src="${resolveImgUrl(p.url)}" alt="">
       <select data-pidx="${i}" style="display:${isCustom ? 'none' : 'block'}">
         <option value="" ${!p.angle?'selected':''}>角度</option>
         ${ANGLES.map(a => `<option ${p.angle===a?'selected':''}>${a}</option>`).join('')}
