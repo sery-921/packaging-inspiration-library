@@ -1,5 +1,28 @@
 [
   {
+    "id": "20260825105239-xru5",
+    "createdAt": "2026-08-25T02:52:39.740Z",
+    "title": "可能可展示的内衬",
+    "date": "2026-08-25",
+    "boxType": "",
+    "dimensions": null,
+    "insertStructure": "",
+    "appearanceStyle": [],
+    "material": null,
+    "productCategory": "",
+    "unboxingExperience": "",
+    "inspirationNotes": "",
+    "photos": [
+      {
+        "url": "images/20260825105235-c4tw.jpg",
+        "file": "20260825105235-c4tw.jpg",
+        "angle": ""
+      }
+    ],
+    "dieline": null,
+    "source": ""
+  },
+  {
     "id": "20260820103523-nys0",
     "createdAt": "2026-08-20T02:35:23.368Z",
     "title": "精油一片纸内衬",
